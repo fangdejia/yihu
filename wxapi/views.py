@@ -24,9 +24,9 @@ def get_access_token(request,appid):
     if cs:
         cs=cs[0]
         tokens=WxToken.objects.filter(wx_credential=cs)
+        nt=timezone.now()
         if tokens:
             tk=tokens[0]
-            nt=timezone.now()
             if tk.expires_time>nt:
                 rep['access_token']=tk.access_token
             else:
