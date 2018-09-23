@@ -236,7 +236,7 @@ class WpUsermeta(models.Model):
 
 #用于存储微信的api调用凭证
 class WxCredential(models.Model):
-    id = models.BigAutoField(db_column='ID', primary_key=True)
+    id = models.BigAutoField(db_column='id', primary_key=True)
     appid=models.CharField(max_length=100)
     secret=models.CharField(max_length=100)
     comment=models.CharField(max_length=100,default="")
@@ -245,10 +245,22 @@ class WxCredential(models.Model):
 
 #用于存储微信小程序的token
 class WxToken(models.Model):
-    id = models.BigAutoField(db_column='ID', primary_key=True)
+    id = models.BigAutoField(db_column='id', primary_key=True)
     access_token=models.CharField(max_length=255)
     expires_time=models.DateTimeField()
     wx_credential=models.ForeignKey(WxCredential, on_delete=models.CASCADE,null=True)
 
     class Meta:
         db_table = 'wx_token'
+
+#用于存储微信小程序的token
+class WxSession(models.Model):
+    id = models.BigAutoField(db_column='id', primary_key=True)
+    token=models.CharField(max_length=36)#用户跟小程序交互的token
+    session_key=models.CharField(max_length=30)#会话密钥
+    open_id=models.CharField(max_length=28)
+    union_id=models.CharField(max_length=29)
+    create_time = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'wx_session'

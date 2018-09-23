@@ -1,14 +1,18 @@
+import logging
 import requests
+import uuid
 from datetime import datetime,timedelta
 from django.http import JsonResponse
 from django.http import HttpResponse
 from django.utils import timezone
-from wxapi.models import WxCredential,WxToken,WpPosts
+from wxapi.models import WxCredential,WxToken,WxSession,WpPosts
+logger = logging.getLogger(__name__)
 def index(request):
     rep='''
     <html>
         <head><title>接口例示</title></head>
         <body>
+            <a href="/wxapi/login/wx00c933316eb2b679/">小程序登录(需post方法发送code到服务器)</a></br>
             <a href="/wxapi/access_token/wx00c933316eb2b679/">获取access_token</a></br>
             <a href="/wxapi/posts/">获取文章列表</a></br>
             <a href="/wxapi/posts/197">获取文章详情</a></br>
@@ -62,3 +66,20 @@ def get_post_detail(request,post_id):
     else:
         p.thumb_url=''
     return JsonResponse({"id":p.id,'title':p.post_title,'post_date':p.post_date,'post_author':p.post_author.display_name,'post_content':p.post_content,'post_thumbnail_url':p.thumb_url})
+
+def login(request,appid):
+    code=request.POST.get('code' ,None)
+    rep={'success':False,'token':''}
+    if code:
+        cs=WxCredential.objects.filter(appid=appid)
+        if cs:
+            cs=cs[0]
+            data=requests.get("https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code"%(appid,cs.secret,code)).json()
+            logger.info(data)
+            if data.get("session_key",None):
+                token=str(uuid.uuid1())
+                rep={'success':True,'token':token}
+                WxSession(token=token,session_key=data.get("session_key",""),open_id=data.get("openid",""),union_id=data.get("unionid","")).save()
+
+    return JsonResponse(rep)
+
