@@ -56,7 +56,11 @@ def get_post_titles(request):
             p.thumb_url=WpPosts.objects.get(id=int(tb[0].meta_value)).guid
         else:
             p.thumb_url=''
-    return JsonResponse({'data':[{"id":p.id,'title':p.post_title,'post_date':p.post_date,'post_author':p.post_author.display_name,'post_thumbnail_url':p.thumb_url} for p in posts]})
+        try:
+            p.display_name=p.post_author.display_name
+        except:
+            p.display_name="unknown"
+    return JsonResponse({'data':[{"id":p.id,'title':p.post_title,'post_date':p.post_date,'post_author':p.display_name ,'post_thumbnail_url':p.thumb_url} for p in posts]})
 
 def get_post_detail(request,post_id):
     p=WpPosts.objects.get(id=post_id)
@@ -72,6 +76,7 @@ def login(request,appid):
     rep={'success':False,'token':''}
     if code:
         cs=WxCredential.objects.filter(appid=appid)
+        logger.info(cs)
         if cs:
             cs=cs[0]
             data=requests.get("https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code"%(appid,cs.secret,code)).json()
