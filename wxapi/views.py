@@ -49,7 +49,7 @@ def get_post_titles(request):
     page_size=int(request.GET.get('page_size' ,'25'))
     limit=page_size*current_page
     offset=limit-page_size
-    posts=WpPosts.objects.filter(post_type='post',post_status='publish')[offset:limit]
+    posts=WpPosts.objects.filter(post_type='post',post_status='publish').order_by("-id")[offset:limit]
     for p in posts:
         tb=p.wppostmeta_set.filter(meta_key='_thumbnail_id')
         if tb:
