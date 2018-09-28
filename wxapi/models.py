@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.timezone import now
 #   * Rearrange models' order
 #   * Make sure each model has one field with primary_key=True
 #   * Make sure each ForeignKey has `on_delete` set to the desired behavior.
@@ -55,28 +56,6 @@ class WpCommentmeta(models.Model):
         app_label = 'wordpress'
         db_table = 'wp_commentmeta'
 
-
-class WpComments(models.Model):
-    comment_id = models.BigAutoField(db_column='comment_ID', primary_key=True)  # Field name made lowercase.
-    comment_post_id = models.BigIntegerField(db_column='comment_post_ID')  # Field name made lowercase.
-    comment_author = models.TextField()
-    comment_author_email = models.CharField(max_length=100)
-    comment_author_url = models.CharField(max_length=200)
-    comment_author_ip = models.CharField(db_column='comment_author_IP', max_length=100)  # Field name made lowercase.
-    comment_date = models.DateTimeField()
-    comment_date_gmt = models.DateTimeField()
-    comment_content = models.TextField()
-    comment_karma = models.IntegerField()
-    comment_approved = models.CharField(max_length=20)
-    comment_agent = models.CharField(max_length=255)
-    comment_type = models.CharField(max_length=20)
-    comment_parent = models.BigIntegerField()
-    user_id = models.BigIntegerField()
-
-    class Meta:
-        managed = False
-        app_label = 'wordpress'
-        db_table = 'wp_comments'
 
 
 class WpLinks(models.Model):
@@ -168,6 +147,28 @@ class WpPostmeta(models.Model):
         managed = False
         app_label = 'wordpress'
         db_table = 'wp_postmeta'
+
+class WpComments(models.Model):
+    comment_id = models.BigAutoField(db_column='comment_ID', primary_key=True)  # Field name made lowercase.
+    comment_post = models.ForeignKey(WpPosts,db_column='comment_post_ID',on_delete=models.CASCADE)  # Field name made lowercase.
+    comment_author = models.TextField()
+    comment_author_email = models.CharField(max_length=100)
+    comment_author_url = models.CharField(max_length=200)
+    comment_author_ip = models.CharField(db_column='comment_author_IP', max_length=100)  # Field name made lowercase.
+    comment_date = models.DateTimeField(default=now)
+    comment_date_gmt = models.DateTimeField(default=now)
+    comment_content = models.TextField()
+    comment_karma = models.IntegerField(default=0)
+    comment_approved = models.CharField(max_length=20,default='1')
+    comment_agent = models.CharField(max_length=255)
+    comment_type = models.CharField(max_length=20,default='')
+    comment_parent = models.BigIntegerField()
+    user_id = models.BigIntegerField()
+
+    class Meta:
+        managed = False
+        app_label = 'wordpress'
+        db_table = 'wp_comments'
 
 
 class WpTermRelationships(models.Model):
